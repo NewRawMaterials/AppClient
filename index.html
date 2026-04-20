@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRM Client</title>
+
+  <!-- Leaflet (carte) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ── VARIABLES ─────────────────────────────────────── */
+    :root {
+      --bg:       #f5f4f0;
+      --surface:  #ffffff;
+      --border:   #e4e2dc;
+      --text:     #1a1916;
+      --muted:    #8a8880;
+      --accent:   #2d5a3d;
+      --accent-l: #e8f0eb;
+      --danger:   #c0392b;
+      --shadow:   0 2px 12px rgba(0,0,0,0.07);
+      --radius:   12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ─────────────────────────────────────────── */
+    #page-login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 380px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .login-card .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .login-card .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 36px;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .login-card input:focus { border-color: var(--accent); }
+
+    .login-card .error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-bottom: 12px;
+      min-height: 18px;
+    }
+
+    /* ── BOUTONS ───────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      width: 100%;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .btn-primary:hover { background: #234a32; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-secondary:hover { background: var(--bg); }
+
+    .btn-danger {
+      background: #fdf0ef;
+      color: var(--danger);
+      border: 1.5px solid #f5c6c2;
+    }
+
+    .btn-danger:hover { background: #fbe5e3; }
+
+    /* ── LAYOUT PRINCIPAL ──────────────────────────────── */
+    #page-app { display: none; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 20px;
+      z-index: 100;
+    }
+
+    .sidebar .brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 32px;
+      padding-left: 4px;
+    }
+
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all .2s;
+      margin-bottom: 4px;
+    }
+
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: var(--accent-l);
+      color: var(--accent);
+    }
+
+    .sidebar .logout {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      font-family: inherit;
+      transition: all .2s;
+      width: 100%;
+    }
+
+    .sidebar .logout:hover { color: var(--danger); background: #fdf0ef; }
+
+    /* Main content */
+    .main {
+      margin-left: 240px;
+      padding: 36px 40px;
+      min-height: 100vh;
+    }
+
+    /* ── PAGE LISTE ────────────────────────────────────── */
+    #view-list { display: none; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .page-header .count {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .page-header .btn {
+      flex-shrink: 0;
+    }
+
+    /* Barre de recherche & filtres */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar input, .search-bar select {
+      padding: 11px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .search-bar input { flex: 1; min-width: 200px; }
+    .search-bar input:focus, .search-bar select:focus { border-color: var(--accent); }
+
+    /* Tableau clients */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover { color: var(--accent); }
+
+    thead th .sort-icon { margin-left: 4px; opacity: .5; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+      cursor: pointer;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--accent-l); }
+
+    tbody td {
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .client-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state svg { margin-bottom: 16px; opacity: .4; }
+    .empty-state p { font-size: 15px; }
+
+    /* ── PAGE FICHE CLIENT ─────────────────────────────── */
+    #view-detail { display: none; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+      padding: 0;
+      margin-bottom: 24px;
+      transition: color .2s;
+    }
+
+    .back-btn:hover { color: var(--accent); }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-full { grid-column: 1 / -1; }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .client-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 0;
+    }
+
+    .avatar-lg {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .client-hero-info h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      font-weight: 400;
+    }
+
+    .client-hero-info .company {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--accent-l);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+
+    .info-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .info-value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .info-value a:hover { text-decoration: underline; }
+
+    /* Carte */
+    #map {
+      height: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .map-placeholder {
+      height: 300px;
+      border-radius: 12px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+      gap: 8px;
+    }
+
+    /* Notes */
+    .notes-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-wrap;
+      min-height: 60px;
+    }
+
+    .notes-text.empty { color: var(--muted); font-style: italic; }
+
+    /* ── FORMULAIRE ────────────────────────────────────── */
+    #view-form { display: none; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--accent); background: var(--surface); }
+
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    /* ── CONTACTS MULTIPLES ────────────────────────────── */
+    .contact-block {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--bg);
+    }
+
+    .contact-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .contact-block-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .btn-remove-contact {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: all .2s;
+      font-family: inherit;
+      font-size: 12px;
+      gap: 4px;
+    }
+
+    .btn-remove-contact:hover { color: var(--danger); background: #fdf0ef; }
+
+    .btn-add-contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      background: var(--accent-l);
+      border: 1.5px dashed var(--accent);
+      border-radius: var(--radius);
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      font-family: inherit;
+      transition: all .2s;
+    }
+
+    .btn-add-contact:hover { background: #d4e6da; }
+
+    .contact-detail-block {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .contact-detail-block:last-child { border-bottom: none; }
+
+    .contact-detail-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .contact-detail-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .contact-detail-line a { color: var(--accent); text-decoration: none; }
+    .contact-detail-line a:hover { text-decoration: underline; }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* ── TOAST ─────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--text);
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .3s;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: var(--accent); }
+    .toast.error { background: var(--danger); }
+
+    /* ── LOADER ────────────────────────────────────────── */
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: var(--muted);
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    /* ── PLANNING ───────────────────────────────────────── */
+    .planning-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .planning-cal-card { flex: 1; }
+    .planning-day-card { min-height: 300px; }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 8px;
+    }
+
+    .cal-weekdays div {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 6px 0;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .15s;
+      position: relative;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      border: 1.5px solid transparent;
+      gap: 3px;
+    }
+
+    .cal-day:hover { background: var(--accent-l); border-color: var(--accent); }
+    .cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+    .cal-day.today:hover { background: #234a32; }
+    .cal-day.selected { border-color: var(--accent); background: var(--accent-l); }
+    .cal-day.today.selected { background: var(--accent); }
+    .cal-day.other-month { color: var(--muted); opacity: .4; cursor: default; }
+    .cal-day.other-month:hover { background: none; border-color: transparent; }
+
+    .cal-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .cal-day.today .cal-dot { background: #fff; }
+
+    /* Notes du jour */
+    .note-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .note-item:last-child { border-bottom: none; }
+
+    .note-text {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .note-delete {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+
+    .note-delete:hover { color: var(--danger); background: #fdf0ef; }
+
+    .no-notes {
+      color: var(--muted);
+      font-size: 14px;
+      font-style: italic;
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .planning-layout { grid-template-columns: 1fr; }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIF COMPLET ─────────────────────────────── */
+
+    /* Tablette (< 1024px) — sidebar réduite mais texte visible */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 160px;
+        padding: 20px 12px;
+      }
+      .sidebar .brand { font-size: 16px; }
+      .sidebar nav a { font-size: 12px; padding: 10px 8px; gap: 7px; }
+      .sidebar .logout { font-size: 12px; }
+      .main { margin-left: 160px; padding: 20px; }
+      .detail-grid { grid-template-columns: 1fr; }
+
+      /* Tableau scrollable horizontalement */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 700px; }
+    }
+
+    /* Mobile (< 700px) — bottom nav */
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px 14px 90px; }
+
+      /* Adaptations des cartes */
+      .detail-grid { grid-template-columns: 1fr; gap: 12px; }
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
+      .form-group.full { grid-column: 1; }
+
+      /* Header de page */
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .page-header .btn { width: 100%; justify-content: center; }
+
+      /* Barre de recherche */
+      .search-bar { flex-direction: column; }
+      .search-bar input,
+      .search-bar select { width: 100%; }
+
+      /* Tableau scrollable horizontalement sur mobile */
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 600px; }
+
+      /* Carte */
+      #map { height: 220px; }
+      #global-map { height: calc(100vh - 160px) !important; min-height: 400px !important; }
+
+      /* Form actions */
+      .form-actions { flex-direction: column-reverse; }
+      .form-actions .btn { width: 100%; justify-content: center; }
+
+      /* Cards */
+      .card { padding: 16px; }
+
+      /* Planning */
+      .planning-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- Barre de navigation mobile -->
+  <style>
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+
+    .mobile-nav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 8px 4px;
+      border-radius: 10px;
+      transition: all .2s;
+    }
+
+    .mobile-nav a.active {
+      color: var(--accent);
+      background: var(--accent-l);
+    }
+
+    .mobile-nav a svg { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  PAGE LOGIN                                           -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="page-login">
+  <div class="login-card">
+    <div class="logo">◈ ClientBase</div>
+    <div class="subtitle">Accès sécurisé à la gestion clients</div>
+    <div style="position:relative;margin-bottom:16px">
+      <input type="password" id="login-input" placeholder="Mot de passe" autocomplete="current-password"
+             style="margin-bottom:0;padding-right:46px"/>
+      <button onclick="togglePasswordVisibility()" id="btn-eye"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:0;display:flex;align-items:center">
+        <svg id="eye-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:16px;justify-content:center">
+      <input type="checkbox" id="remember-me" style="width:auto;margin:0;padding:0;letter-spacing:0;text-align:left;border-radius:4px;cursor:pointer"/>
+      Se souvenir de moi
+    </label>
+    <div class="error" id="login-error"></div>
+    <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  PAGE APP                                             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="page-app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="brand">◈ ClientBase</div>
+    <nav>
+      <a href="#" onclick="showView('list')" id="nav-list">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Tous les clients
+      </a>
+      <a href="#" onclick="showView('map')" id="nav-map">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Carte clients
+      </a>
+      <a href="#" onclick="showView('form', null)" id="nav-add">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Ajouter un client
+      </a>
+      <a href="#" onclick="showView('planning')" id="nav-planning">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Planning
+      </a>
+    </nav>
+    <button class="logout" onclick="logout()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="main">
+
+    <!-- ── LISTE ── -->
+    <div id="view-list">
+      <div class="page-header">
+        <div>
+          <h1>Clients</h1>
+          <div class="count" id="client-count">—</div>
+        </div>
+        <button class="btn btn-primary" onclick="showView('form', null)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nouveau client
+        </button>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="🔍  Rechercher par nom, prénom, ville…" oninput="renderTable()"/>
+        <select id="filter-region" onchange="renderTable()">
+          <option value="">Toutes les régions</option>
+        </select>
+        <select id="sort-select" onchange="renderTable()">
+          <option value="entreprise">Trier par entreprise</option>
+          <option value="nom">Trier par nom</option>
+          <option value="ville">Trier par ville</option>
+          <option value="region">Trier par région</option>
+          <option value="numeroCap">Trier par N° CAP</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <div id="table-loader" class="loader">
+          <div class="spinner"></div> Chargement des clients…
+        </div>
+        <table id="client-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Entreprise</th>
+              <th>Client</th>
+              <th>Ville</th>
+              <th>Région</th>
+              <th>Téléphone</th>
+              <th>Email</th>
+              <th>N° CAP</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div id="table-empty" class="empty-state" style="display:none">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <p>Aucun client trouvé</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FICHE CLIENT ── -->
+    <div id="view-detail">
+      <button class="back-btn" onclick="showView('list')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+        Retour à la liste
+      </button>
+
+      <div class="detail-grid">
+
+        <!-- Identité -->
+        <div class="card">
+          <div class="card-title">Identité</div>
+          <div class="client-hero">
+            <div class="avatar-lg" id="d-avatar"></div>
+            <div class="client-hero-info">
+              <h2 id="d-fullname"></h2>
+              <div class="company" id="d-company"></div>
+            </div>
+          </div>
+          <div class="info-row" id="d-cap-row" style="margin-top:12px">
+            <div class="info-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/></svg>
+            </div>
+            <div>
+              <div class="info-label">Numéro CAP</div>
+              <div class="info-value" id="d-cap"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Localisation -->
+        <div class="card">
+          <div class="card-title">Localisation</div>
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="info-label">Adresse</div>
+              <div class="info-value" id="d-adresse"></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg>
+            </div>
+            <div>
+              <div class="info-label">Région</div>
+              <div class="info-value" id="d-region"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacts -->
+        <div class="card">
+          <div class="card-title">Contacts</div>
+          <div id="d-contacts"></div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card">
+          <div class="card-title">Notes</div>
+          <div class="notes-text" id="d-notes"></div>
+        </div>
+
+        <!-- Carte -->
+        <div class="card card-full">
+          <div class="card-title">Localisation sur la carte</div>
+          <div id="map"></div>
+          <div id="map-placeholder" class="map-placeholder" style="display:none">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Adresse introuvable sur la carte
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions" style="margin-top:20px">
+        <button class="btn btn-danger" id="btn-delete" onclick="deleteCurrentClient()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Supprimer
+        </button>
+        <button class="btn btn-secondary" id="btn-edit" onclick="editCurrentClient()" style="display:inline-flex;align-items:center;gap:8px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FORMULAIRE ── -->
+    <div id="view-form">
+      <button class="back-btn" onclick="showView('list')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+        Retour à la liste
+      </button>
+
+      <div class="page-header" style="margin-bottom:24px">
+        <h1 id="form-title" style="font-family:'DM Serif Display',serif;font-size:26px;font-weight:400">Nouveau client</h1>
+      </div>
+
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom *</label>
+            <input type="text" id="f-nom" placeholder="Dupont"/>
+          </div>
+          <div class="form-group">
+            <label>Prénom *</label>
+            <input type="text" id="f-prenom" placeholder="Jean"/>
+          </div>
+          <div class="form-group full">
+            <label>Entreprise</label>
+            <input type="text" id="f-entreprise" placeholder="Nom de l'entreprise"/>
+          </div>
+          <div class="form-group full">
+            <label>Adresse</label>
+            <input type="text" id="f-adresse" placeholder="12 rue de la Paix"/>
+          </div>
+          <div class="form-group">
+            <label>Code postal</label>
+            <input type="text" id="f-cp" placeholder="75001"/>
+          </div>
+          <div class="form-group">
+            <label>Ville</label>
+            <input type="text" id="f-ville" placeholder="Paris"/>
+          </div>
+          <div class="form-group full">
+            <label>Région</label>
+            <input type="text" id="f-region" placeholder="Île-de-France"/>
+          </div>
+          <div class="form-group">
+            <label>Numéro CAP</label>
+            <input type="text" id="f-cap" placeholder="Ex: 12345"/>
+          </div>
+          <div class="form-group full">
+            <label>Notes</label>
+            <textarea id="f-notes" placeholder="Informations complémentaires…"></textarea>
+          </div>
+        </div>
+
+        <!-- Section contacts multiples -->
+        <div style="margin-top:20px">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Contacts</div>
+          <div id="contacts-container"></div>
+          <button class="btn-add-contact" onclick="addContactBlock()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un contact
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="showView('list')">Annuler</button>
+          <button class="btn btn-primary" id="btn-save" onclick="saveClient()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARTE GLOBALE ── -->
+    <div id="view-map" style="display:none">
+      <div class="page-header">
+        <div>
+          <h1>Carte clients</h1>
+          <div class="count" id="map-status">Chargement des positions…</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">
+            <div style="width:12px;height:12px;border-radius:50%;background:#2d5a3d;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div> Client
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)">
+            <div style="width:12px;height:12px;border-radius:50%;background:#e67e22;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div> Ma position
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)">
+        <div id="global-map" style="height:calc(100vh - 200px);min-height:500px"></div>
+      </div>
+    </div>
+
+    <!-- ── PLANNING ── -->
+    <div id="view-planning" style="display:none">
+      <div class="page-header">
+        <div>
+          <h1>Planning</h1>
+          <div class="count" id="planning-subtitle"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="changeMonth(-1)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+          </button>
+          <button class="btn btn-secondary" onclick="changeMonth(1)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="planning-layout">
+        <!-- Calendrier -->
+        <div class="card planning-cal-card">
+          <div class="cal-weekdays">
+            <div>Lun</div><div>Mar</div><div>Mer</div>
+            <div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+
+        <!-- Panneau notes du jour -->
+        <div class="card planning-day-card" id="planning-day-panel">
+          <div class="card-title" id="day-panel-title">Sélectionne un jour</div>
+          <div id="day-notes-list"></div>
+          <div id="day-add-form" style="display:none;margin-top:16px">
+            <textarea id="new-note-input" placeholder="Nouvelle note…" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:14px;resize:vertical;min-height:80px;background:var(--bg);outline:none"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+              <button class="btn btn-primary" onclick="saveNote()">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+                Ajouter
+              </button>
+            </div>
+          </div>
+          <button class="btn-add-contact" id="btn-add-note" onclick="showNoteForm()" style="display:none;margin-top:12px">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter une note
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .main -->
+</div><!-- #page-app -->
+
+<!-- Barre navigation mobile -->
+<nav class="mobile-nav" id="mobile-nav" style="display:none">
+  <a href="#" onclick="showView('list')" id="mob-list">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Clients
+  </a>
+  <a href="#" onclick="showView('map')" id="mob-map">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    Carte
+  </a>
+  <a href="#" onclick="showView('form', null)" id="mob-add">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Ajouter
+  </a>
+  <a href="#" onclick="showView('planning')" id="mob-planning">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Planning
+  </a>
+  <a href="#" onclick="logout()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Quitter
+  </a>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                           -->
+<!-- ══════════════════════════════════════════════════════ -->
+<script>
+// ─── CONFIG ─────────────────────────────────────────────
+// Remplace cette URL par l'URL du Google Apps Script actuel
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2kFCfbRGzfpjat0DmE5E11n6RQKEK7YK80XVp9U5ep5ViKXwSV01sBeUHh-Zq9EQ/exec";
+
+// ─── ÉTAT ────────────────────────────────────────────────
+let password = "";
+let clients = [];
+let currentClient = null;
+let editingId = null;
+let leafletMap = null;
+
+// ─── LOGIN ───────────────────────────────────────────────
+// Pré-remplit le mot de passe si "Se souvenir de moi" était coché
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('crm_pwd');
+  if (saved) {
+    document.getElementById('login-input').value = saved;
+    document.getElementById('remember-me').checked = true;
+  }
+});
+
+function togglePasswordVisibility() {
+  const input = document.getElementById('login-input');
+  const icon  = document.getElementById('eye-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  } else {
+    input.type = 'password';
+    icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+}
+
+document.getElementById('login-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+
+async function handleLogin() {
+  const pwd = document.getElementById('login-input').value.trim();
+  if (!pwd) return;
+
+  const btn = document.querySelector('#page-login .btn-primary');
+  btn.textContent = "Connexion…";
+  btn.disabled = true;
+
+  // Test de connexion : on demande la liste
+  const res = await api('getAll', {}, pwd);
+
+  if (res && res.success) {
+    password = pwd;
+    clients = res.clients || [];
+    // Sauvegarde le mot de passe si "Se souvenir de moi" est coché
+    if (document.getElementById('remember-me').checked) {
+      localStorage.setItem('crm_pwd', pwd);
+    } else {
+      localStorage.removeItem('crm_pwd');
+    }
+    document.getElementById('page-login').style.display = 'none';
+    document.getElementById('page-app').style.display = 'block';
+    document.body.classList.add('logged-in');
+    document.getElementById('mobile-nav').style.setProperty('display', 'flex', 'important');
+    showView('list');
+  } else {
+    document.getElementById('login-error').textContent = "Mot de passe incorrect.";
+    btn.textContent = "Se connecter";
+    btn.disabled = false;
+  }
+}
+
+function logout() {
+  password = "";
+  clients = [];
+  document.getElementById('page-login').style.display = 'flex';
+  document.getElementById('page-app').style.display = 'none';
+  document.body.classList.remove('logged-in');
+  document.getElementById('mobile-nav').style.setProperty('display', 'none', 'important');
+  document.getElementById('login-error').textContent = '';
+  // Remet le mot de passe sauvegardé si existant
+  const saved = localStorage.getItem('crm_pwd');
+  if (saved) {
+    document.getElementById('login-input').value = saved;
+    document.getElementById('remember-me').checked = true;
+  } else {
+    document.getElementById('login-input').value = '';
+    document.getElementById('remember-me').checked = false;
+  }
+  // Remet le bouton de connexion dans son état initial
+  const btn = document.querySelector('#page-login .btn-primary');
+  btn.textContent = "Se connecter";
+  btn.disabled = false;
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────
+function showView(view, data) {
+  ['list','detail','form','map','planning'].forEach(v => {
+    document.getElementById('view-' + v).style.display = 'none';
+  });
+  document.querySelectorAll('.sidebar nav a, .mobile-nav a').forEach(a => a.classList.remove('active'));
+
+  if (view === 'list') {
+    document.getElementById('view-list').style.display = 'block';
+    document.getElementById('nav-list').classList.add('active');
+    document.getElementById('mob-list').classList.add('active');
+    loadClients();
+  } else if (view === 'detail') {
+    document.getElementById('view-detail').style.display = 'block';
+  } else if (view === 'form') {
+    document.getElementById('view-form').style.display = 'block';
+    document.getElementById('nav-add').classList.add('active');
+    document.getElementById('mob-add').classList.add('active');
+    renderForm(data);
+  } else if (view === 'map') {
+    document.getElementById('view-map').style.display = 'block';
+    document.getElementById('nav-map').classList.add('active');
+    document.getElementById('mob-map').classList.add('active');
+    initGlobalMap();
+  } else if (view === 'planning') {
+    document.getElementById('view-planning').style.display = 'block';
+    document.getElementById('nav-planning').classList.add('active');
+    document.getElementById('mob-planning').classList.add('active');
+    initPlanning();
+  }
+
+  // Sur mobile, scroll en haut à chaque changement de vue
+  window.scrollTo(0, 0);
+  return false;
+}
+
+// Appel séparé pour renderDetail (pas dans showView car pas de nav active)
+function goToDetail(id) {
+  ['list','detail','form','map','planning'].forEach(v => {
+    document.getElementById('view-' + v).style.display = 'none';
+  });
+  document.querySelectorAll('.sidebar nav a, .mobile-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('view-detail').style.display = 'block';
+  renderDetail(id);
+  window.scrollTo(0, 0);
+}
+
+// ─── LISTE ───────────────────────────────────────────────
+async function loadClients() {
+  document.getElementById('table-loader').style.display = 'flex';
+  document.getElementById('client-table').style.display = 'none';
+
+  const res = await api('getAll');
+  if (res && res.success) {
+    clients = res.clients || [];
+    updateRegionFilter();
+  }
+  document.getElementById('table-loader').style.display = 'none';
+  document.getElementById('client-table').style.display = 'table';
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const region = document.getElementById('filter-region').value;
+  const sort   = document.getElementById('sort-select').value;
+
+  let filtered = clients.filter(c => {
+    const matchSearch = !search ||
+      (c.nom || '').toLowerCase().includes(search) ||
+      (c.prenom || '').toLowerCase().includes(search) ||
+      (c.ville || '').toLowerCase().includes(search) ||
+      (c.entreprise || '').toLowerCase().includes(search);
+    const matchRegion = !region || c.region === region;
+    return matchSearch && matchRegion;
+  });
+
+  filtered.sort((a, b) => {
+    if (sort === 'numeroCap') {
+      return (parseInt(a.numeroCap) || 0) - (parseInt(b.numeroCap) || 0);
+    }
+    return (a[sort] || '').localeCompare(b[sort] || '');
+  });
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('table-empty');
+
+  document.getElementById('client-count').textContent =
+    `${filtered.length} client${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbody.innerHTML = filtered.map(c => {
+    // Récupère le contact principal
+    let contacts = [];
+    try { contacts = c.contacts ? JSON.parse(c.contacts) : []; } catch(e) {}
+    const principal = contacts[0] || {};
+    const tel   = principal.tel   || '';
+    const email = principal.email || '';
+
+    return `
+    <tr onclick="goToDetail('${c.id}')">
+      <td>${c.entreprise || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>
+        <div class="client-name-cell">
+          <div class="avatar">${initials(c.nom, c.prenom)}</div>
+          <span>${c.prenom || ''} ${c.nom || ''}</span>
+        </div>
+      </td>
+      <td>${c.ville || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${c.region || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${tel ? `<a href="tel:${tel}" onclick="event.stopPropagation()">${tel}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${email ? `<a href="mailto:${email}" onclick="event.stopPropagation()">${email}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${c.numeroCap || '<span style="color:var(--muted)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updateRegionFilter() {
+  const regions = [...new Set(clients.map(c => c.region).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-region');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Toutes les régions</option>' +
+    regions.map(r => `<option value="${r}"${r === current ? ' selected' : ''}>${r}</option>`).join('');
+}
+
+// ─── FICHE DÉTAIL ─────────────────────────────────────────
+function renderDetail(id) {
+  const c = clients.find(x => x.id === id);
+  if (!c) { showView('list'); return; }
+  currentClient = c;
+
+  document.getElementById('d-avatar').textContent = initials(c.nom, c.prenom);
+  document.getElementById('d-fullname').textContent = `${c.prenom || ''} ${c.nom || ''}`.trim();
+  document.getElementById('d-company').textContent = c.entreprise || '';
+
+  const capEl = document.getElementById('d-cap');
+  const capRow = document.getElementById('d-cap-row');
+  if (c.numeroCap) {
+    capEl.textContent = c.numeroCap;
+    capRow.style.display = 'flex';
+  } else {
+    capRow.style.display = 'none';
+  }
+
+  const adresse = [c.adresse, c.codePostal, c.ville].filter(Boolean).join(', ');
+  document.getElementById('d-adresse').textContent = adresse || '—';
+  document.getElementById('d-region').textContent = c.region || '—';
+
+  // Contacts multiples
+  const contactsEl = document.getElementById('d-contacts');
+  let contacts = [];
+  try { contacts = c.contacts ? JSON.parse(c.contacts) : []; } catch(e) {}
+
+  if (!contacts.length) {
+    contactsEl.innerHTML = '<div style="color:var(--muted);font-size:14px;font-style:italic">Aucun contact renseigné</div>';
+  } else {
+    contactsEl.innerHTML = contacts.map((ct, i) => `
+      <div class="contact-detail-block">
+        <div class="contact-detail-name">${ct.prenom || ''} ${ct.nom || ''}${i === 0 ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">(principal)</span>' : ''}</div>
+        ${ct.tel ? `<div class="contact-detail-line">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.58 2.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
+          <a href="tel:${ct.tel}">${ct.tel}</a>
+        </div>` : ''}
+        ${ct.email ? `<div class="contact-detail-line">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:${ct.email}">${ct.email}</a>
+        </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  const notesEl = document.getElementById('d-notes');
+  notesEl.textContent = c.notes || 'Aucune note';
+  notesEl.className = 'notes-text' + (c.notes ? '' : ' empty');
+
+  // Carte
+  initMap(adresse);
+}
+
+// ─── CARTE ────────────────────────────────────────────────
+async function initMap(adresse) {
+  const mapEl = document.getElementById('map');
+  const placeholder = document.getElementById('map-placeholder');
+  mapEl.style.display = 'block';
+  placeholder.style.display = 'none';
+
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+
+  if (!adresse) { mapEl.style.display = 'none'; placeholder.style.display = 'flex'; return; }
+
+  try {
+    // Géocodage via Nominatim (OpenStreetMap, gratuit, sans clé API)
+    const encoded = encodeURIComponent(adresse + ', France');
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=1`);
+    const data = await res.json();
+
+    if (!data.length) throw new Error('Introuvable');
+
+    const lat = parseFloat(data[0].lat);
+    const lon = parseFloat(data[0].lon);
+
+    leafletMap = L.map('map').setView([lat, lon], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(leafletMap);
+
+    // Marqueur custom couleur accent
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;background:#2d5a3d;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+    L.marker([lat, lon], { icon }).addTo(leafletMap).bindPopup(adresse);
+
+  } catch {
+    mapEl.style.display = 'none';
+    placeholder.style.display = 'flex';
+  }
+}
+
+// ─── FORMULAIRE ──────────────────────────────────────────
+let contactCount = 0;
+
+function addContactBlock(data = {}) {
+  contactCount++;
+  const idx = contactCount;
+  const isFirst = document.getElementById('contacts-container').children.length === 0;
+
+  const block = document.createElement('div');
+  block.className = 'contact-block';
+  block.dataset.idx = idx;
+  block.innerHTML = `
+    <div class="contact-block-header">
+      <div class="contact-block-title">${isFirst ? 'Contact principal' : 'Contact ' + idx}</div>
+      ${!isFirst ? `<button class="btn-remove-contact" onclick="removeContactBlock(this)">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Supprimer
+      </button>` : ''}
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" class="c-prenom" placeholder="Jean" value="${data.prenom || ''}"/>
+      </div>
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" class="c-nom" placeholder="Dupont" value="${data.nom || ''}"/>
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" class="c-tel" placeholder="06 00 00 00 00" value="${data.tel || ''}"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="c-email" placeholder="jean@exemple.fr" value="${data.email || ''}"/>
+      </div>
+    </div>
+  `;
+  document.getElementById('contacts-container').appendChild(block);
+}
+
+function removeContactBlock(btn) {
+  btn.closest('.contact-block').remove();
+}
+
+function renderForm(id) {
+  editingId = id || null;
+  contactCount = 0;
+  document.getElementById('form-title').textContent = id ? 'Modifier le client' : 'Nouveau client';
+
+  const fields = ['nom','prenom','adresse','cp','ville','region','cap','notes'];
+  fields.forEach(f => document.getElementById('f-' + f).value = '');
+  document.getElementById('f-entreprise').value = '';
+  document.getElementById('contacts-container').innerHTML = '';
+
+  if (id) {
+    const c = clients.find(x => x.id === id);
+    if (c) {
+      document.getElementById('f-nom').value        = c.nom || '';
+      document.getElementById('f-prenom').value     = c.prenom || '';
+      document.getElementById('f-entreprise').value = c.entreprise || '';
+      document.getElementById('f-adresse').value    = c.adresse || '';
+      document.getElementById('f-cp').value         = c.codePostal || '';
+      document.getElementById('f-ville').value      = c.ville || '';
+      document.getElementById('f-region').value     = c.region || '';
+      document.getElementById('f-cap').value        = c.numeroCap || '';
+      document.getElementById('f-notes').value      = c.notes || '';
+
+      let contacts = [];
+      try { contacts = c.contacts ? JSON.parse(c.contacts) : []; } catch(e) {}
+      if (contacts.length) {
+        contacts.forEach(ct => addContactBlock(ct));
+      } else {
+        addContactBlock();
+      }
+    }
+  } else {
+    addContactBlock(); // Un contact vide par défaut
+  }
+}
+
+async function saveClient() {
+  const nom = document.getElementById('f-nom').value.trim();
+  const prenom = document.getElementById('f-prenom').value.trim();
+  if (!nom) { toast('Le nom est obligatoire', 'error'); return; }
+
+  // Récupère tous les contacts
+  const contactBlocks = document.querySelectorAll('#contacts-container .contact-block');
+  const contacts = Array.from(contactBlocks).map(block => ({
+    prenom: block.querySelector('.c-prenom').value.trim(),
+    nom:    block.querySelector('.c-nom').value.trim(),
+    tel:    block.querySelector('.c-tel').value.trim(),
+    email:  block.querySelector('.c-email').value.trim(),
+  })).filter(ct => ct.nom || ct.prenom || ct.tel || ct.email);
+
+  const data = {
+    nom, prenom,
+    entreprise: document.getElementById('f-entreprise').value.trim(),
+    adresse:    document.getElementById('f-adresse').value.trim(),
+    codePostal: document.getElementById('f-cp').value.trim(),
+    ville:      document.getElementById('f-ville').value.trim(),
+    region:     document.getElementById('f-region').value.trim(),
+    numeroCap:  document.getElementById('f-cap').value.trim(),
+    notes:      document.getElementById('f-notes').value.trim(),
+    contacts:   JSON.stringify(contacts),
+  };
+
+  // Si l'adresse a changé sur un client existant → invalide le cache GPS
+  if (editingId) {
+    const ancien = clients.find(c => c.id === editingId);
+    if (ancien) {
+      const adresseChangee =
+        data.adresse   !== (ancien.adresse   || '') ||
+        data.codePostal !== (ancien.codePostal || '') ||
+        data.ville     !== (ancien.ville     || '');
+      if (adresseChangee) {
+        data.lat = '';
+        data.lng = '';
+      }
+    }
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = "Enregistrement…";
+
+  let res;
+  if (editingId) {
+    res = await api('update', { id: editingId, data });
+  } else {
+    res = await api('create', { data });
+  }
+
+  if (res && res.success) {
+    toast(editingId ? 'Client modifié ✓' : 'Client ajouté ✓', 'success');
+    await loadClients();
+    showView('list');
+  } else {
+    toast('Erreur : ' + (res?.error || 'inconnue'), 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg> Enregistrer`;
+}
+
+function editCurrentClient() {
+  if (currentClient) showView('form', currentClient.id);
+}
+
+async function deleteCurrentClient() {
+  if (!currentClient) return;
+  if (!confirm(`Supprimer ${currentClient.prenom} ${currentClient.nom} ? Cette action est irréversible.`)) return;
+
+  const res = await api('delete', { id: currentClient.id });
+  if (res && res.success) {
+    toast('Client supprimé', 'success');
+    await loadClients();
+    showView('list');
+  } else {
+    toast('Erreur lors de la suppression', 'error');
+  }
+}
+
+// ─── CARTE GLOBALE ───────────────────────────────────────
+let globalMap = null;
+
+async function initGlobalMap() {
+  if (globalMap) { globalMap.remove(); globalMap = null; }
+
+  globalMap = L.map('global-map').setView([46.8, 2.3], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(globalMap);
+
+  // Icône client
+  const clientIcon = (nom, prenom) => L.divIcon({
+    className: '',
+    html: `<div style="width:36px;height:36px;background:#2d5a3d;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">${initials(nom, prenom)}</div>`,
+    iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20]
+  });
+
+  // Icône position actuelle
+  const myIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:20px;height:20px;background:#e67e22;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>
+           <div style="width:40px;height:40px;background:rgba(230,126,34,.2);border-radius:50%;position:absolute;top:-10px;left:-10px;animation:pulse 2s infinite"></div>`,
+    iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -15]
+  });
+
+  if (!document.getElementById('pulse-style')) {
+    const style = document.createElement('style');
+    style.id = 'pulse-style';
+    style.textContent = `@keyframes pulse{0%{transform:scale(1);opacity:.6}50%{transform:scale(1.4);opacity:.2}100%{transform:scale(1);opacity:.6}}`;
+    document.head.appendChild(style);
+  }
+
+  // Géolocalisation
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        L.marker([lat, lng], { icon: myIcon }).addTo(globalMap)
+          .bindPopup('<b style="color:#e67e22">📍 Ma position</b>').openPopup();
+      },
+      () => { document.getElementById('map-status').textContent = 'Position non disponible'; }
+    );
+  }
+
+  // Charge les clients
+  if (!clients.length) {
+    const res = await api('getAll');
+    if (res && res.success) clients = res.clients || [];
+  }
+
+  const clientsAvecAdresse = clients.filter(c => c.adresse || c.ville);
+  let placés = 0, nouveaux = 0, erreurs = 0;
+
+  // Sépare ceux qui ont déjà un cache GPS et ceux qui n'en ont pas
+  const avecCache  = clientsAvecAdresse.filter(c => c.lat && c.lng && parseFloat(c.lat) !== 0);
+  const sansCache  = clientsAvecAdresse.filter(c => !c.lat || !c.lng || parseFloat(c.lat) === 0);
+
+  document.getElementById('map-status').textContent =
+    avecCache.length
+      ? `Chargement de ${avecCache.length} clients depuis le cache, géolocalisation de ${sansCache.length} nouveau${sansCache.length > 1 ? 'x' : ''}…`
+      : `Géolocalisation de ${sansCache.length} clients… (première ouverture, ~${sansCache.length} secondes)`;
+
+  // ── Clients avec cache → placement instantané ──
+  const placeMarker = (c, lat, lon) => {
+    const adresse = [c.adresse, c.codePostal, c.ville].filter(Boolean).join(', ');
+    let contacts = [];
+    try { contacts = c.contacts ? JSON.parse(c.contacts) : []; } catch(e) {}
+    const p = contacts[0] || {};
+    const telLine   = p.tel   ? `<br><a href="tel:${p.tel}" style="color:#2d5a3d">${p.tel}</a>` : '';
+    const emailLine = p.email ? `<br><a href="mailto:${p.email}" style="color:#2d5a3d">${p.email}</a>` : '';
+    L.marker([lat, lon], { icon: clientIcon(c.nom, c.prenom) })
+      .addTo(globalMap)
+      .bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:160px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${c.prenom || ''} ${c.nom || ''}</div>
+        ${c.entreprise ? `<div style="color:#8a8880;font-size:12px;margin-bottom:6px">${c.entreprise}</div>` : ''}
+        <div style="font-size:12px;color:#555">${adresse}</div>
+        ${telLine}${emailLine}
+        <div style="margin-top:8px"><a onclick="goToDetail('${c.id}');return false;" href="#" style="font-size:12px;color:#2d5a3d;font-weight:600">Voir la fiche →</a></div>
+      </div>`);
+  };
+
+  avecCache.forEach(c => {
+    placeMarker(c, parseFloat(c.lat), parseFloat(c.lng));
+    placés++;
+  });
+
+  if (avecCache.length) {
+    document.getElementById('map-status').textContent =
+      `${placés} client${placés > 1 ? 's' : ''} chargés${sansCache.length ? `, géolocalisation de ${sansCache.length} nouveau${sansCache.length > 1 ? 'x' : ''}…` : ''}`;
+  }
+
+  // ── Clients sans cache → géocodage + sauvegarde ──
+  for (const c of sansCache) {
+    const adresse = [c.adresse, c.codePostal, c.ville].filter(Boolean).join(', ');
+    try {
+      await new Promise(r => setTimeout(r, 1100)); // Respect limite Nominatim
+      const encoded = encodeURIComponent(adresse + ', France');
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=1`);
+      const data = await res.json();
+      if (data.length) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        placeMarker(c, lat, lon);
+        placés++;
+        nouveaux++;
+        // Sauvegarde dans le Sheet pour les prochaines fois
+        api('updateCoords', { id: c.id, lat, lng: lon });
+        // Met à jour le cache local
+        c.lat = lat; c.lng = lon;
+        document.getElementById('map-status').textContent =
+          `${placés} client${placés > 1 ? 's' : ''} sur la carte (${nouveaux} géolocalisé${nouveaux > 1 ? 's' : ''})…`;
+      } else {
+        erreurs++;
+      }
+    } catch(e) { erreurs++; }
+  }
+
+  let msg = `${placés} client${placés > 1 ? 's' : ''} sur la carte`;
+  if (erreurs) msg += ` · ${erreurs} adresse${erreurs > 1 ? 's' : ''} introuvable${erreurs > 1 ? 's' : ''}`;
+  document.getElementById('map-status').textContent = msg;
+}
+
+// ─── PLANNING ────────────────────────────────────────────
+const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                 'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+let planningDate  = new Date();   // mois affiché
+let planningEvents = [];          // événements du mois en cours
+let selectedDay   = null;         // date sélectionnée (string YYYY-MM-DD)
+
+async function initPlanning() {
+  renderPlanningHeader();
+  await loadEvents();
+  renderCalendar();
+}
+
+function renderPlanningHeader() {
+  const m = planningDate.getMonth();
+  const y = planningDate.getFullYear();
+  document.getElementById('planning-subtitle').textContent = `${MOIS_FR[m]} ${y}`;
+}
+
+async function loadEvents() {
+  const month = `${planningDate.getFullYear()}-${String(planningDate.getMonth()+1).padStart(2,'0')}`;
+  const res = await api('getEvents', {});
+  if (res.success) {
+    // Filtrage côté JS — plus fiable que côté serveur
+    planningEvents = res.events.filter(e => String(e.date).startsWith(month));
+  } else {
+    planningEvents = [];
+  }
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const year  = planningDate.getFullYear();
+  const month = planningDate.getMonth();
+
+  // 1er jour du mois (0=dim → on décale pour lundi=0)
+  let firstDay = new Date(year, month, 1).getDay();
+  firstDay = (firstDay === 0) ? 6 : firstDay - 1;
+
+  const daysInMonth    = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const today = new Date();
+  const todayStr = toDateStr(today);
+
+  // Événements indexés par date
+  const eventsByDay = {};
+  planningEvents.forEach(e => {
+    const d = String(e.date).substring(0, 10);
+    if (!eventsByDay[d]) eventsByDay[d] = [];
+    eventsByDay[d].push(e);
+  });
+
+  let html = '';
+
+  // Jours du mois précédent (grisés)
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month">${daysInPrevMonth - i}</div>`;
+  }
+
+  // Jours du mois courant
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday    = dateStr === todayStr;
+    const isSelected = dateStr === selectedDay;
+    const hasDot     = eventsByDay[dateStr] && eventsByDay[dateStr].length > 0;
+
+    let cls = 'cal-day';
+    if (isToday)    cls += ' today';
+    if (isSelected) cls += ' selected';
+
+    html += `<div class="${cls}" onclick="selectDay('${dateStr}')">
+      ${d}
+      ${hasDot ? '<div class="cal-dot"></div>' : ''}
+    </div>`;
+  }
+
+  // Jours du mois suivant (grisés)
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  let nextDay = 1;
+  for (let i = firstDay + daysInMonth; i < totalCells; i++) {
+    html += `<div class="cal-day other-month">${nextDay++}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function selectDay(dateStr) {
+  selectedDay = dateStr;
+  renderCalendar();
+  renderDayPanel();
+}
+
+function renderDayPanel() {
+  if (!selectedDay) return;
+
+  const [y, m, d] = selectedDay.split('-');
+  const label = `${parseInt(d)} ${MOIS_FR[parseInt(m)-1]} ${y}`;
+  document.getElementById('day-panel-title').textContent = label;
+  document.getElementById('btn-add-note').style.display  = 'flex';
+  document.getElementById('day-add-form').style.display  = 'none';
+  document.getElementById('new-note-input').value        = '';
+
+  const dayEvents = planningEvents.filter(e => String(e.date).substring(0,10) === selectedDay);
+  const list = document.getElementById('day-notes-list');
+
+  if (!dayEvents.length) {
+    list.innerHTML = '<div class="no-notes">Aucune note pour ce jour</div>';
+    return;
+  }
+
+  list.innerHTML = dayEvents.map(e => `
+    <div class="note-item" id="note-${e.id}">
+      <div class="note-text">${escHtml(String(e.note))}</div>
+      <button class="note-delete" onclick="deleteNote('${e.id}')" title="Supprimer">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function showNoteForm() {
+  document.getElementById('day-add-form').style.display = 'block';
+  document.getElementById('btn-add-note').style.display = 'none';
+  document.getElementById('new-note-input').focus();
+}
+
+async function saveNote() {
+  const note = document.getElementById('new-note-input').value.trim();
+  if (!note || !selectedDay) return;
+
+  const res = await api('createEvent', { data: { date: selectedDay, note } });
+  if (res && res.success) {
+    await loadEvents();
+    renderCalendar();
+    renderDayPanel();
+    toast('Note ajoutée ✓', 'success');
+  } else {
+    toast('Erreur lors de l\'ajout', 'error');
+  }
+}
+
+async function deleteNote(id) {
+  if (!confirm('Supprimer cette note ?')) return;
+  const res = await api('deleteEvent', { id });
+  if (res && res.success) {
+    await loadEvents();
+    renderCalendar();
+    renderDayPanel();
+    toast('Note supprimée', 'success');
+  } else {
+    toast('Erreur lors de la suppression', 'error');
+  }
+}
+
+async function changeMonth(delta) {
+  // Crée une nouvelle date au 1er du mois cible — évite les débordements (ex: 31 jan → fév)
+  planningDate = new Date(planningDate.getFullYear(), planningDate.getMonth() + delta, 1);
+  selectedDay = null;
+  document.getElementById('day-panel-title').textContent = 'Sélectionne un jour';
+  document.getElementById('day-notes-list').innerHTML = '';
+  document.getElementById('btn-add-note').style.display = 'none';
+  document.getElementById('day-add-form').style.display = 'none';
+  renderPlanningHeader();
+  await loadEvents();
+  renderCalendar();
+}
+
+function toDateStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── API ──────────────────────────────────────────────────
+async function api(action, extra = {}, pwd = null) {
+  try {
+    const params = new URLSearchParams();
+    params.set('action', action);
+    params.set('password', pwd || password);
+
+    // Transmet tous les paramètres extras
+    Object.entries(extra).forEach(([key, val]) => {
+      if (key === 'data') {
+        params.set('data', JSON.stringify(val));
+      } else {
+        params.set(key, val);
+      }
+    });
+
+    const res = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return { success: false, error: e.message };
+  }
+}
+
+// ─── UTILITAIRES ─────────────────────────────────────────
+function initials(nom, prenom) {
+  return ((prenom?.[0] || '') + (nom?.[0] || '')).toUpperCase() || '?';
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+// On charge les clients après login (géré dans handleLogin)
+</script>
+</body>
+</html>
