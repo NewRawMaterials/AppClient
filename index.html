@@ -176,7 +176,6 @@
       background: var(--accent-l);
       color: var(--accent);
     }
-
     .sidebar .logout {
       margin-top: auto;
       display: flex;
@@ -279,11 +278,8 @@
       letter-spacing: .6px;
       background: var(--bg);
       border-bottom: 1px solid var(--border);
-      cursor: pointer;
       user-select: none;
     }
-
-    thead th:hover { color: var(--accent); }
 
     thead th .sort-icon { margin-left: 4px; opacity: .5; }
 
@@ -881,7 +877,7 @@
         </svg>
       </button>
     </div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:16px;justify-content:center">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:16px;justify-content:center" title="Le mot de passe sera stocké en clair dans le navigateur.">
       <input type="checkbox" id="remember-me" style="width:auto;margin:0;padding:0;letter-spacing:0;text-align:left;border-radius:4px;cursor:pointer"/>
       Se souvenir de moi
     </label>
@@ -896,22 +892,22 @@
 <div id="page-app">
 
   <!-- Sidebar -->
-  <nav class="sidebar">
+  <aside class="sidebar">
     <div class="brand">◈ ClientBase</div>
     <nav>
-      <a href="#" onclick="showView('list')" id="nav-list">
+      <a href="#" onclick="event.preventDefault();showView('list')" id="nav-list">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Tous les clients
       </a>
-      <a href="#" onclick="showView('map')" id="nav-map">
+      <a href="#" onclick="event.preventDefault();showView('map')" id="nav-map">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
         Carte clients
       </a>
-      <a href="#" onclick="showView('form', null)" id="nav-add">
+      <a href="#" onclick="event.preventDefault();showView('form', null)" id="nav-add">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         Ajouter un client
       </a>
-      <a href="#" onclick="showView('planning')" id="nav-planning">
+      <a href="#" onclick="event.preventDefault();showView('planning')" id="nav-planning">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Planning
       </a>
@@ -920,7 +916,7 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Déconnexion
     </button>
-  </nav>
+  </aside>
 
   <!-- Contenu principal -->
   <div class="main">
@@ -1085,7 +1081,7 @@
             <input type="text" id="f-nom" placeholder="Dupont"/>
           </div>
           <div class="form-group">
-            <label>Prénom *</label>
+            <label>Prénom</label>
             <input type="text" id="f-prenom" placeholder="Jean"/>
           </div>
           <div class="form-group full">
@@ -1212,23 +1208,23 @@
 
 <!-- Barre navigation mobile -->
 <nav class="mobile-nav" id="mobile-nav" style="display:none">
-  <a href="#" onclick="showView('list')" id="mob-list">
+  <a href="#" onclick="event.preventDefault();showView('list')" id="mob-list">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
     Clients
   </a>
-  <a href="#" onclick="showView('map')" id="mob-map">
+  <a href="#" onclick="event.preventDefault();showView('map')" id="mob-map">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
     Carte
   </a>
-  <a href="#" onclick="showView('form', null)" id="mob-add">
+  <a href="#" onclick="event.preventDefault();showView('form', null)" id="mob-add">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Ajouter
   </a>
-  <a href="#" onclick="showView('planning')" id="mob-planning">
+  <a href="#" onclick="event.preventDefault();showView('planning')" id="mob-planning">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Planning
   </a>
-  <a href="#" onclick="logout()">
+  <a href="#" onclick="event.preventDefault();logout()">
     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     Quitter
   </a>
@@ -1242,8 +1238,8 @@
 <!-- ══════════════════════════════════════════════════════ -->
 <script>
 // ─── CONFIG ─────────────────────────────────────────────
-// Remplace cette URL par l'URL du Google Apps Script actuel
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2kFCfbRGzfpjat0DmE5E11n6RQKEK7YK80XVp9U5ep5ViKXwSV01sBeUHh-Zq9EQ/exec";
+// ⚠️  Remplace cette URL par l'URL de ton Google Apps Script
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhyd-DM1qG3wmTXpq3mr9QQIpmT-qVUTYFc0N5_v_c934zG7G_ZeTDfmMNh1fTXCsP/exec";
 
 // ─── ÉTAT ────────────────────────────────────────────────
 let password = "";
@@ -1439,19 +1435,19 @@ function renderTable() {
     const email = principal.email || '';
 
     return `
-    <tr onclick="goToDetail('${c.id}')">
-      <td>${c.entreprise || '<span style="color:var(--muted)">—</span>'}</td>
+    <tr onclick="goToDetail('${escAttr(c.id)}')">
+      <td>${c.entreprise ? escHtml(c.entreprise) : '<span style="color:var(--muted)">—</span>'}</td>
       <td>
         <div class="client-name-cell">
-          <div class="avatar">${initials(c.nom, c.prenom)}</div>
-          <span>${c.prenom || ''} ${c.nom || ''}</span>
+          <div class="avatar">${escHtml(initials(c.nom, c.prenom))}</div>
+          <span>${escHtml(c.prenom || '')} ${escHtml(c.nom || '')}</span>
         </div>
       </td>
-      <td>${c.ville || '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${c.region || '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${tel ? `<a href="tel:${tel}" onclick="event.stopPropagation()">${tel}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${email ? `<a href="mailto:${email}" onclick="event.stopPropagation()">${email}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
-      <td>${c.numeroCap || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${c.ville ? escHtml(c.ville) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${c.region ? escHtml(c.region) : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${tel ? `<a href="tel:${escAttr(tel)}" onclick="event.stopPropagation()">${escHtml(tel)}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${email ? `<a href="mailto:${escAttr(email)}" onclick="event.stopPropagation()">${escHtml(email)}</a>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${c.numeroCap ? escHtml(c.numeroCap) : '<span style="color:var(--muted)">—</span>'}</td>
     </tr>`;
   }).join('');
 }
@@ -1461,7 +1457,7 @@ function updateRegionFilter() {
   const sel = document.getElementById('filter-region');
   const current = sel.value;
   sel.innerHTML = '<option value="">Toutes les régions</option>' +
-    regions.map(r => `<option value="${r}"${r === current ? ' selected' : ''}>${r}</option>`).join('');
+    regions.map(r => `<option value="${escAttr(r)}"${r === current ? ' selected' : ''}>${escHtml(r)}</option>`).join('');
 }
 
 // ─── FICHE DÉTAIL ─────────────────────────────────────────
@@ -1497,14 +1493,14 @@ function renderDetail(id) {
   } else {
     contactsEl.innerHTML = contacts.map((ct, i) => `
       <div class="contact-detail-block">
-        <div class="contact-detail-name">${ct.prenom || ''} ${ct.nom || ''}${i === 0 ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">(principal)</span>' : ''}</div>
+        <div class="contact-detail-name">${escHtml(ct.prenom || '')} ${escHtml(ct.nom || '')}${i === 0 ? ' <span style="font-size:11px;color:var(--accent);font-weight:400">(principal)</span>' : ''}</div>
         ${ct.tel ? `<div class="contact-detail-line">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.58 2.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
-          <a href="tel:${ct.tel}">${ct.tel}</a>
+          <a href="tel:${escAttr(ct.tel)}">${escHtml(ct.tel)}</a>
         </div>` : ''}
         ${ct.email ? `<div class="contact-detail-line">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <a href="mailto:${ct.email}">${ct.email}</a>
+          <a href="mailto:${escAttr(ct.email)}">${escHtml(ct.email)}</a>
         </div>` : ''}
       </div>
     `).join('');
@@ -1552,7 +1548,7 @@ async function initMap(adresse) {
       iconSize: [14, 14],
       iconAnchor: [7, 7]
     });
-    L.marker([lat, lon], { icon }).addTo(leafletMap).bindPopup(adresse);
+    L.marker([lat, lon], { icon }).addTo(leafletMap).bindPopup(escHtml(adresse));
 
   } catch {
     mapEl.style.display = 'none';
@@ -1582,19 +1578,19 @@ function addContactBlock(data = {}) {
     <div class="form-grid">
       <div class="form-group">
         <label>Prénom</label>
-        <input type="text" class="c-prenom" placeholder="Jean" value="${data.prenom || ''}"/>
+        <input type="text" class="c-prenom" placeholder="Jean" value="${escAttr(data.prenom || '')}"/>
       </div>
       <div class="form-group">
         <label>Nom</label>
-        <input type="text" class="c-nom" placeholder="Dupont" value="${data.nom || ''}"/>
+        <input type="text" class="c-nom" placeholder="Dupont" value="${escAttr(data.nom || '')}"/>
       </div>
       <div class="form-group">
         <label>Téléphone</label>
-        <input type="tel" class="c-tel" placeholder="06 00 00 00 00" value="${data.tel || ''}"/>
+        <input type="tel" class="c-tel" placeholder="06 00 00 00 00" value="${escAttr(data.tel || '')}"/>
       </div>
       <div class="form-group">
         <label>Email</label>
-        <input type="email" class="c-email" placeholder="jean@exemple.fr" value="${data.email || ''}"/>
+        <input type="email" class="c-email" placeholder="jean@exemple.fr" value="${escAttr(data.email || '')}"/>
       </div>
     </div>
   `;
@@ -1695,8 +1691,7 @@ async function saveClient() {
 
   if (res && res.success) {
     toast(editingId ? 'Client modifié ✓' : 'Client ajouté ✓', 'success');
-    await loadClients();
-    showView('list');
+    showView('list'); // showView('list') appelle déjà loadClients()
   } else {
     toast('Erreur : ' + (res?.error || 'inconnue'), 'error');
   }
@@ -1716,8 +1711,7 @@ async function deleteCurrentClient() {
   const res = await api('delete', { id: currentClient.id });
   if (res && res.success) {
     toast('Client supprimé', 'success');
-    await loadClients();
-    showView('list');
+    showView('list'); // appelle loadClients() en interne
   } else {
     toast('Erreur lors de la suppression', 'error');
   }
@@ -1737,7 +1731,7 @@ async function initGlobalMap() {
   // Icône client
   const clientIcon = (nom, prenom) => L.divIcon({
     className: '',
-    html: `<div style="width:36px;height:36px;background:#2d5a3d;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">${initials(nom, prenom)}</div>`,
+    html: `<div style="width:36px;height:36px;background:#2d5a3d;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">${escHtml(initials(nom, prenom))}</div>`,
     iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20]
   });
 
@@ -1792,16 +1786,16 @@ async function initGlobalMap() {
     let contacts = [];
     try { contacts = c.contacts ? JSON.parse(c.contacts) : []; } catch(e) {}
     const p = contacts[0] || {};
-    const telLine   = p.tel   ? `<br><a href="tel:${p.tel}" style="color:#2d5a3d">${p.tel}</a>` : '';
-    const emailLine = p.email ? `<br><a href="mailto:${p.email}" style="color:#2d5a3d">${p.email}</a>` : '';
+    const telLine   = p.tel   ? `<br><a href="tel:${escAttr(p.tel)}" style="color:#2d5a3d">${escHtml(p.tel)}</a>` : '';
+    const emailLine = p.email ? `<br><a href="mailto:${escAttr(p.email)}" style="color:#2d5a3d">${escHtml(p.email)}</a>` : '';
     L.marker([lat, lon], { icon: clientIcon(c.nom, c.prenom) })
       .addTo(globalMap)
       .bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:160px">
-        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${c.prenom || ''} ${c.nom || ''}</div>
-        ${c.entreprise ? `<div style="color:#8a8880;font-size:12px;margin-bottom:6px">${c.entreprise}</div>` : ''}
-        <div style="font-size:12px;color:#555">${adresse}</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${escHtml(c.prenom || '')} ${escHtml(c.nom || '')}</div>
+        ${c.entreprise ? `<div style="color:#8a8880;font-size:12px;margin-bottom:6px">${escHtml(c.entreprise)}</div>` : ''}
+        <div style="font-size:12px;color:#555">${escHtml(adresse)}</div>
         ${telLine}${emailLine}
-        <div style="margin-top:8px"><a onclick="goToDetail('${c.id}');return false;" href="#" style="font-size:12px;color:#2d5a3d;font-weight:600">Voir la fiche →</a></div>
+        <div style="margin-top:8px"><a onclick="goToDetail('${escAttr(c.id)}');return false;" href="#" style="font-size:12px;color:#2d5a3d;font-weight:600">Voir la fiche →</a></div>
       </div>`);
   };
 
@@ -1829,8 +1823,9 @@ async function initGlobalMap() {
         placeMarker(c, lat, lon);
         placés++;
         nouveaux++;
-        // Sauvegarde dans le Sheet pour les prochaines fois
-        api('updateCoords', { id: c.id, lat, lng: lon });
+        // Sauvegarde dans le Sheet pour les prochaines fois (fire-and-forget avec catch)
+        api('updateCoords', { id: c.id, lat, lng: lon })
+          .catch(err => console.warn('Sauvegarde GPS échouée pour', c.id, err));
         // Met à jour le cache local
         c.lat = lat; c.lng = lon;
         document.getElementById('map-status').textContent =
@@ -1849,7 +1844,6 @@ async function initGlobalMap() {
 // ─── PLANNING ────────────────────────────────────────────
 const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
                  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const JOURS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
 let planningDate  = new Date();   // mois affiché
 let planningEvents = [];          // événements du mois en cours
@@ -1869,10 +1863,10 @@ function renderPlanningHeader() {
 
 async function loadEvents() {
   const month = `${planningDate.getFullYear()}-${String(planningDate.getMonth()+1).padStart(2,'0')}`;
-  const res = await api('getEvents', {});
-  if (res.success) {
-    // Filtrage côté JS — plus fiable que côté serveur
-    planningEvents = res.events.filter(e => String(e.date).startsWith(month));
+  // Le serveur filtre maintenant côté Apps Script si on lui passe le mois
+  const res = await api('getEvents', { month });
+  if (res && res.success) {
+    planningEvents = res.events;
   } else {
     planningEvents = [];
   }
@@ -1960,9 +1954,9 @@ function renderDayPanel() {
   }
 
   list.innerHTML = dayEvents.map(e => `
-    <div class="note-item" id="note-${e.id}">
+    <div class="note-item" id="note-${escAttr(e.id)}">
       <div class="note-text">${escHtml(String(e.note))}</div>
-      <button class="note-delete" onclick="deleteNote('${e.id}')" title="Supprimer">
+      <button class="note-delete" onclick="deleteNote('${escAttr(e.id)}')" title="Supprimer">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -2022,10 +2016,6 @@ function toDateStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 // ─── API ──────────────────────────────────────────────────
 async function api(action, extra = {}, pwd = null) {
   try {
@@ -2063,6 +2053,28 @@ function toast(msg, type = '') {
   el.textContent = msg;
   el.className = 'toast show' + (type ? ' ' + type : '');
   setTimeout(() => el.className = 'toast', 3000);
+}
+
+// Échappe les caractères HTML pour éviter toute injection XSS
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Échappe pour les attributs HTML (utilisé surtout dans les value="...")
+function escAttr(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 // ─── INIT ─────────────────────────────────────────────────
